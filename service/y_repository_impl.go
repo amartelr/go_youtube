@@ -2,11 +2,11 @@ package service
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/amartelr/go_youtube/entity"
-	modelPlayL "github.com/amartelr/go_youtube/model/playlist"
+	modelPlay "github.com/amartelr/go_youtube/model/playlist"
 	modelSus "github.com/amartelr/go_youtube/model/subscription"
-	"github.com/amartelr/go_youtube/util"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -15,34 +15,36 @@ const (
 )
 
 // NewYoutubeServ any
-func NewYoutubeServ(param *entity.Parameters) Service {
+func NewYoutubeServ(client *http.Client, param *entity.Parameters) Service {
 	return &youtubeService{
-		Param: param,
+		Client: client,
+		Param:  param,
 	}
 }
 
 type youtubeService struct {
-	Param *entity.Parameters
+	Param  *entity.Parameters
+	Client *http.Client
 }
 
-func (repository *youtubeService) GetMysSubscriptions() (subscriptions []entity.Subscription, error util.RestErrorResponse) {
+func (repository *youtubeService) GetMysSubscriptions() (subscriptions []entity.Subscription, err error) {
 
 	url := endpoint + "/" + repository.Param.Model
-	client := resty.New()
 
 	var subscriptionslist = modelSus.Subscription{}
+	client := resty.NewWithClient(repository.Client)
 
-	_, err := client.R().EnableTrace().
+	_, eErr := client.R().EnableTrace().
 		SetQueryParams(map[string]string{
 			"part":       repository.Param.Part,
 			"mine":       repository.Param.Mine,
 			"key":        repository.Param.Key,
 			"maxResults": repository.Param.MaxResults,
 			"order":      repository.Param.Order,
-		}).ForceContentType("application/json").SetAuthToken(repository.Param.AccessToken).SetResult(&subscriptionslist).Get(url)
+		}).SetResult(&subscriptionslist).Get(url)
 
-	if err != nil {
-		log.Fatal(err)
+	if eErr != nil {
+		log.Fatal(eErr)
 	}
 	for _, item := range subscriptionslist.Items {
 		subscriptions = append(subscriptions, entity.Subscription{
@@ -51,27 +53,27 @@ func (repository *youtubeService) GetMysSubscriptions() (subscriptions []entity.
 			ResourceID:  item.Snippet.ResourceID.ChannelID,
 		})
 	}
-	return subscriptions, util.RestErrorResponse{}
+	return subscriptions, eErr
 }
 
-func (repository *youtubeService) GetPlayList() (playList []entity.PlayList, error util.RestErrorResponse) {
+func (repository *youtubeService) GetPlayList() (playList []entity.PlayList, err error) {
 
 	url := endpoint + "/" + repository.Param.Model
-	client := resty.New()
+	client := resty.NewWithClient(repository.Client)
 
-	var modelPlaylist = modelPlayL.PlayList{}
+	var modelPlaylist = modelPlay.PlayList{}
 
-	_, err := client.R().EnableTrace().
+	_, eErr := client.R().EnableTrace().
 		SetQueryParams(map[string]string{
 			"part":       repository.Param.Part,
 			"mine":       repository.Param.Mine,
 			"key":        repository.Param.Key,
 			"maxResults": repository.Param.MaxResults,
 			"order":      repository.Param.Order,
-		}).ForceContentType("application/json").SetAuthToken(repository.Param.AccessToken).SetResult(&modelPlaylist).Get(url)
+		}).SetResult(&modelPlaylist).Get(url)
 
-	if err != nil {
-		log.Fatal(err)
+	if eErr != nil {
+		log.Fatal(eErr)
 	}
 
 	for _, item := range modelPlaylist.Items {
@@ -81,5 +83,5 @@ func (repository *youtubeService) GetPlayList() (playList []entity.PlayList, err
 			ResourceID:  item.ID,
 		})
 	}
-	return playList, util.RestErrorResponse{}
+	return playList, eErr
 }

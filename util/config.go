@@ -9,13 +9,6 @@ import (
 	"github.com/amartelr/go_youtube/entity"
 )
 
-// RestErrorResponse any
-type RestErrorResponse struct {
-	Code            int
-	Message         string
-	ValidationError map[string]interface{}
-}
-
 func LoadParams() (param *entity.Parameters) {
 
 	filename, err := os.Open("assets/Params.json")

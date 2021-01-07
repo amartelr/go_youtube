@@ -4,6 +4,5 @@
   "Mine": "true",
   "Key": "API_KEY",
   "MaxResults": "30",
-  "Order": "alphabetical",
-  "AccessToken": "ACCESS_TOKEN"
+  "Order": "alphabetical"
 }

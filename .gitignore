@@ -63,5 +63,6 @@ $RECYCLE.BIN/
 # Others
 LEEME.md
 assets/Params.json
+assets/client_secret.json
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,windows
