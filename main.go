@@ -9,14 +9,13 @@ import (
 )
 
 func main() {
-	service, err := gserv.InitAuth()
+	c, err := gserv.NewClient("assets/client_secret.json", "youtube-go.json", "youtube.YoutubeReadonlyScope")
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-
 	params := util.LoadParams()
-	myYoutubeServ := gserv.NewYoutubeServ(service, params)
+	myYoutubeServ := gserv.NewYoutubeServ(c, params)
 	params.Model = "subscriptions"
 	subscri, err := myYoutubeServ.GetMysSubscriptions()
 	if err != nil {
@@ -38,4 +37,27 @@ func main() {
 	for _, item := range list {
 		println(fmt.Sprintf("%s: https://music.youtube.com/playlist?list=%s", item.Title, item.ResourceID))
 	}
+
+	/*
+		service, err := gserv.InitAuth()
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		params := util.LoadParams()
+		myYoutubeServ := gserv.NewYoutubeServ(service, params)
+		params.Model = "subscriptions"
+		subscri, err := myYoutubeServ.GetMysSubscriptions()
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		for _, item := range subscri {
+			println(fmt.Sprintf("%s: https://www.youtube.com/channel/%s", item.Title, item.ResourceID))
+		}
+
+
+	*/
 }

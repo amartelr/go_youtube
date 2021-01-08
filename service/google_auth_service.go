@@ -11,31 +11,17 @@ import (
 	"os/user"
 	"path/filepath"
 
+	entity "github.com/amartelr/go_youtube/entity"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	youtube "google.golang.org/api/youtube/v3"
 )
 
 const missingClientSecretsMessage = `
 Please configure OAuth 2.0
 `
 
-// getToken, for only http request, later with resty
-func getToken(ctx context.Context, config *oauth2.Config) *http.Client {
-	cacheFile, err := tokenCacheFile()
-	if err != nil {
-		log.Fatalf("Unable to get path to cached credential file. %v", err)
-	}
-	tok, err := tokenFromFile(cacheFile)
-	if err != nil {
-		tok = getTokenFromWeb(config)
-		saveToken(cacheFile, tok)
-	}
-	return config.Client(ctx, tok)
-}
-
-func InitAuth() (service *http.Client, err error) {
+func NewClient(clientSecret string, credentialFile string, scope string) (client *entity.Client, err error) {
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile("assets/client_secret.json")
@@ -44,18 +30,22 @@ func InitAuth() (service *http.Client, err error) {
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
-	// at ~/.credentials/youtube-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, youtube.YoutubeReadonlyScope)
+	// at ~/.credentials/youtube-go.json.json
+	config, err := google.ConfigFromJSON(b, scope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-	return getToken(ctx, config), err
+
+	return &entity.Client{
+		EndPoint:   "https://youtube.googleapis.com/youtube/v3",
+		HttpClient: getToken(ctx, config, credentialFile),
+	}, err
 }
 
-// getClient uses a Context and Config to retrieve a Token
-// then generate a Client. It returns the generated Client.
-func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
-	cacheFile, err := tokenCacheFile()
+// getToken, for only http request, later with resty
+// uses a Context and Config to retrieve a Token
+func getToken(ctx context.Context, config *oauth2.Config, credentialFile string) *http.Client {
+	cacheFile, err := tokenCacheFile(credentialFile)
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
 	}
@@ -88,7 +78,7 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 
 // tokenCacheFile generates credential file path/filename.
 // It returns the generated credential path/filename.
-func tokenCacheFile() (string, error) {
+func tokenCacheFile(credentialFile string) (string, error) {
 	usr, err := user.Current()
 	if err != nil {
 		return "", err
@@ -96,7 +86,7 @@ func tokenCacheFile() (string, error) {
 	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
 	os.MkdirAll(tokenCacheDir, 0700)
 	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("youtube-go.json")), err
+		url.QueryEscape(credentialFile)), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.

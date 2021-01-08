@@ -2,7 +2,6 @@ package service
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/amartelr/go_youtube/entity"
 	modelPlay "github.com/amartelr/go_youtube/model/playlist"
@@ -10,12 +9,8 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-const (
-	endpoint = "https://youtube.googleapis.com/youtube/v3"
-)
-
 // NewYoutubeServ any
-func NewYoutubeServ(client *http.Client, param *entity.Parameters) Service {
+func NewYoutubeServ(client *entity.Client, param *entity.Parameters) Service {
 	return &youtubeService{
 		Client: client,
 		Param:  param,
@@ -24,15 +19,15 @@ func NewYoutubeServ(client *http.Client, param *entity.Parameters) Service {
 
 type youtubeService struct {
 	Param  *entity.Parameters
-	Client *http.Client
+	Client *entity.Client
 }
 
 func (repository *youtubeService) GetMysSubscriptions() (subscriptions []entity.Subscription, err error) {
 
-	url := endpoint + "/" + repository.Param.Model
+	url := repository.Client.EndPoint + "/" + repository.Param.Model
 
 	var subscriptionslist = modelSus.Subscription{}
-	client := resty.NewWithClient(repository.Client)
+	client := resty.NewWithClient(repository.Client.HttpClient)
 
 	_, eErr := client.R().EnableTrace().
 		SetQueryParams(map[string]string{
@@ -58,8 +53,8 @@ func (repository *youtubeService) GetMysSubscriptions() (subscriptions []entity.
 
 func (repository *youtubeService) GetPlayList() (playList []entity.PlayList, err error) {
 
-	url := endpoint + "/" + repository.Param.Model
-	client := resty.NewWithClient(repository.Client)
+	url := repository.Client.EndPoint + "/" + repository.Param.Model
+	client := resty.NewWithClient(repository.Client.HttpClient)
 
 	var modelPlaylist = modelPlay.PlayList{}
 
