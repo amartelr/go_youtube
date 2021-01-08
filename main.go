@@ -4,20 +4,31 @@ import (
 	"fmt"
 	"log"
 
-	gserv "github.com/amartelr/go_youtube/service"
-	"github.com/amartelr/go_youtube/util"
+	"github.com/amartelr/go_youtube/entity"
+	"github.com/amartelr/go_youtube/service"
+	subser "github.com/amartelr/go_youtube/service/subscription"
 )
 
 func main() {
-	c, err := gserv.NewClient("assets/client_secret.json", "youtube-go.json", "youtube.YoutubeReadonlyScope")
+	c, err := service.NewClient(
+		"assets/client_secret.json",
+		"assets/api_key.json",
+		"youtube-go.json",
+		"youtube.YoutubeReadonlyScope")
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	params := util.LoadParams()
-	myYoutubeServ := gserv.NewYoutubeServ(c, params)
-	params.Model = "subscriptions"
-	subscri, err := myYoutubeServ.GetMysSubscriptions()
+
+	mySubServ := subser.NewSubscriptionService(c)
+
+	optionsList := entity.SubscriptionListOptions{
+		Part:       "snippet",
+		Mine:       "True",
+		MaxResults: "2",
+		Order:      "alphabetical",
+	}
+	subscri, err := mySubServ.SubscriptionList(&optionsList)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -26,38 +37,4 @@ func main() {
 	for _, item := range subscri {
 		println(fmt.Sprintf("%s: https://www.youtube.com/channel/%s", item.Title, item.ResourceID))
 	}
-
-	params.Model = "playlists"
-	list, err := myYoutubeServ.GetPlayList()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	for _, item := range list {
-		println(fmt.Sprintf("%s: https://music.youtube.com/playlist?list=%s", item.Title, item.ResourceID))
-	}
-
-	/*
-		service, err := gserv.InitAuth()
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-
-		params := util.LoadParams()
-		myYoutubeServ := gserv.NewYoutubeServ(service, params)
-		params.Model = "subscriptions"
-		subscri, err := myYoutubeServ.GetMysSubscriptions()
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-
-		for _, item := range subscri {
-			println(fmt.Sprintf("%s: https://www.youtube.com/channel/%s", item.Title, item.ResourceID))
-		}
-
-
-	*/
 }

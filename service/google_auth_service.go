@@ -17,14 +17,26 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const missingClientSecretsMessage = `
+/* const missingClientSecretsMessage = `
 Please configure OAuth 2.0
-`
+` */
 
-func NewClient(clientSecret string, credentialFile string, scope string) (client *entity.Client, err error) {
+func NewClient(clientSecretFile string, apiKeyFile string, credentialFile string, scope string) (client *entity.Client, err error) {
+
+	jsonFile, err := os.Open(apiKeyFile)
+
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	var result map[string]interface{}
+	json.Unmarshal([]byte(byteValue), &result)
+
 	ctx := context.Background()
-
-	b, err := ioutil.ReadFile("assets/client_secret.json")
+	b, err := ioutil.ReadFile(clientSecretFile)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
@@ -38,6 +50,7 @@ func NewClient(clientSecret string, credentialFile string, scope string) (client
 
 	return &entity.Client{
 		EndPoint:   "https://youtube.googleapis.com/youtube/v3",
+		ApiKey:     result["API_KEY"].(string),
 		HttpClient: getToken(ctx, config, credentialFile),
 	}, err
 }
@@ -113,13 +126,3 @@ func saveToken(file string, token *oauth2.Token) {
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
 }
-
-/* func handleError(err error, message string) {
-	if message == "" {
-		message = "Error making API call"
-	}
-	if err != nil {
-		log.Fatalf(message+": %v", err.Error())
-	}
-}
-*/

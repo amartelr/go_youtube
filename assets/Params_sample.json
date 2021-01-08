@@ -1,8 +1,0 @@
-{
-  "Model": "subscriptions",
-  "Part": "snippet",
-  "Mine": "true",
-  "Key": "API_KEY",
-  "MaxResults": "30",
-  "Order": "alphabetical"
-}
