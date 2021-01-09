@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/amartelr/go_youtube/entity"
-	modelSus "github.com/amartelr/go_youtube/model/subscription"
+	model "github.com/amartelr/go_youtube/model/subscription"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -29,7 +29,7 @@ func (c *subscriptionService) SubscriptionList(options *entity.SubscriptionListO
 
 	url := c.Client.EndPoint + "/subscriptions"
 
-	var subscriptionslist = modelSus.Subscription{}
+	var subscriptionslist = model.Subscription{}
 	client := resty.NewWithClient(c.Client.HttpClient)
 
 	_, eErr := client.R().EnableTrace().

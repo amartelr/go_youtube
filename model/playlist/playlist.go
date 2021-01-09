@@ -1,6 +1,6 @@
 package model
 
-type PlayList struct {
+type Playlist struct {
 	Kind          string   `json:"kind"`
 	Etag          string   `json:"etag"`
 	NextPageToken string   `json:"nextPageToken"`
@@ -9,10 +9,15 @@ type PlayList struct {
 }
 
 type Item struct {
-	Kind    string  `json:"kind"`
-	Etag    string  `json:"etag"`
-	ID      string  `json:"id"`
-	Snippet Snippet `json:"snippet"`
+	Kind           string         `json:"kind"`
+	Etag           string         `json:"etag"`
+	ID             string         `json:"id"`
+	Snippet        Snippet        `json:"snippet"`
+	ContentDetails ContentDetails `json:"contentDetails"`
+}
+
+type ContentDetails struct {
+	ItemCount int64 `json:"itemCount"`
 }
 
 type Snippet struct {
